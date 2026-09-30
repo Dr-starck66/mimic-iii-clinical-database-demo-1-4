@@ -60,6 +60,7 @@ async function run(){try{let fs=await sio('/funnels?limit=100');let funnel=fs.da
  await new Promise(r=>setTimeout(r,2500));
  const verify=await sio('/funnels/'+funnel.id+'/steps?limit=100');console.log('FINAL_STEPS '+JSON.stringify(verify));
  for(const s of verify.data.items){console.log('PUBLIC_AUDIT '+JSON.stringify({name:s.name,url:s.url,audit:await audit(s.url)}));}
+ const rr=await fetch('https://dr-starck66.systeme.io/106dcde4',{redirect:'follow'});const hh=await rr.text();const mm=hh.match(/<a[^>]+href=["']https:\/\/wyyldeavisfrance\.wordpress\.com\/["'][^>]*>\s*Wyylde Avis 2026\s*<\/a>/i);console.log('BACKLINK_AUDIT '+JSON.stringify({http:rr.status,found:!!mm,count:(hh.match(/https:\/\/wyyldeavisfrance\.wordpress\.com\//g)||[]).length,nofollow:mm?/nofollow/i.test(mm[0]):null,anchor:mm?'Wyylde Avis 2026':null}));
 }catch(e){console.error('BUILD_ERROR '+String(e?.stack||e));}}
 const app=http.createServer((req,res)=>req.url==='/health'?j(res,200,{ok:true}):j(res,200,{ok:true}));
 app.listen(PORT,()=>{console.log('ready',PORT);run();});
