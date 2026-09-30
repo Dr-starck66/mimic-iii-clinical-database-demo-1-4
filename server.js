@@ -12,6 +12,15 @@ async function startupProbe(){try{
  const t=await r.text();
  const lines=t.split('\n').filter(x=>/funnel|page editor|website|schema/i.test(x));
  console.log('SYSTEME_DOCS '+JSON.stringify({status:r.status,lines:lines.slice(0,500)}));
+ const docUrls=[
+  'https://developer.systeme.io/reference/api_funnels_post.md',
+  'https://developer.systeme.io/reference/api_funnels_funnelidsteps_post.md',
+  'https://developer.systeme.io/reference/api_page-editorpage-schema_post.md',
+  'https://developer.systeme.io/reference/api_page-editorpage-template_post.md'
+ ];
+ for(const url of docUrls){const dr=await fetch(url);const body=await dr.text();console.log('SYSTEME_DOC_BODY '+JSON.stringify({url,status:dr.status,body:body.slice(0,30000)}));}
+ const ll=t.split('\n').filter(x=>/page.editor|page content|replace|save|update|funnelstep/i.test(x));
+ console.log('SYSTEME_LLMS_MATCHES '+JSON.stringify(ll.slice(0,1000)));
 }catch(e){console.error('SYSTEME_PROBE_ERROR '+String(e?.stack||e));}}
 const app=http.createServer(async(req,res)=>{try{const u=new URL(req.url,'http://localhost');if(u.pathname==='/health')return json(res,200,{ok:true});if(u.searchParams.get('token')!==TOKEN)return json(res,403,{ok:false,error:'forbidden'});
 if(u.pathname==='/probe'){const [contacts,funnels]=await Promise.all([sio('/contacts?limit=1'),sio('/funnels?limit=20')]);return json(res,200,{contacts:{status:contacts.status,ok:contacts.ok},funnels});}
