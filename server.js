@@ -1,44 +1,53 @@
 import http from 'node:http';
-const PORT=process.env.PORT||3000;
-const API='https://api.systeme.io/api';
-const KEY=process.env.SYSTEME_API_KEY;
-function j(res,s,d){res.writeHead(s,{'content-type':'application/json; charset=utf-8','cache-control':'no-store'});res.end(JSON.stringify(d));}
-async function sio(path,opts={}){const r=await fetch(API+path,{...opts,headers:{'X-API-Key':KEY,'accept':'application/json','content-type':'application/json',...(opts.headers||{})}});const t=await r.text();let d;try{d=JSON.parse(t)}catch{d=t}return {status:r.status,ok:r.ok,data:d,remaining:r.headers.get('x-ratelimit-remaining')};}
-const text=(html)=>({type:'Text',textAlign:'left',html});
-const h=(t,l='h2')=>({type:'Headline',text:t,level:l});
-const bullets=(items)=>({type:'BulletList',items,icon:'circle-check'});
-const row=(...blocks)=>({columns:[{size:12,blocks}]});
-const section=(tone,...blocks)=>({tone,backgroundImageDescription:null,rows:[row(...blocks)]});
-const palette={palettePreset:'navy-flare',cornerStyle:'soft',fontPair:'editorial',cardLayout:null,heroLayout:'centred',heroBackground:'solid',headingFontFamily:'Montserrat',bodyFontFamily:'Inter'};
-const sections=[
- section('hero',h('Wyylde avis 2026 : notre analyse complète','h1'),text('<p><strong>Wyylde est une plateforme française de rencontres pour adultes.</strong> Notre avis se concentre sur ce qui peut être vérifié : inscription, prix, abonnement Gold, fonctionnalités, certification, sécurité et conditions de résiliation.</p><p>Dernière vérification : 30 septembre 2026.</p>')),
- section('feature',h('Comment nous évaluons Wyylde'),text('<p>Nous séparons les faits publiés par Wyylde des témoignages et opinions externes. Les tarifs, règles de renouvellement, procédures de certification et conditions d’accès sont vérifiés dans le centre d’aide et les conditions d’utilisation disponibles publiquement.</p>'),bullets(['Sources primaires privilégiées','Dates de mise à jour indiquées','Contradictions documentées au lieu d’être masquées','Aucun faux témoignage ajouté'])),
- section('feature',h('Wyylde gratuit ou Gold ?'),text('<p>L’inscription à Wyylde est gratuite, mais l’accès reste limité. D’après le centre d’aide Wyylde mis à jour en mars 2026, un abonnement Gold est nécessaire pour utiliser de manière illimitée plusieurs fonctions telles que la messagerie, le chat, les lives et l’accès aux contenus des membres.</p>'),bullets(['Inscription gratuite','Accès gratuit limité','Gold requis pour plusieurs fonctions illimitées','Réservé aux personnes majeures : 18 ans en France'])),
- section('pricing',h('Prix Wyylde Gold en France'),text('<p>Tarifs affichés par le centre d’aide Wyylde pour la plateforme française, vérifiés le 30 septembre 2026 :</p>'),bullets(['1 mois : 22,90 €','3 mois : 44,90 € au total','12 mois : 99,90 € au total','Les formules trimestrielle et annuelle sont réglées en une seule fois']),text('<p>Les prix peuvent varier selon le pays ou certains tarifs préférentiels liés au compte. Vérifiez toujours le montant affiché avant paiement.</p>')),
- section('feature',h('Profils certifiés et sécurité'),text('<p>Wyylde propose une certification de profil. Selon son centre d’aide, la procédure peut demander une photo non modifiée avec le pseudo, la mention « pour Wyylde » et la date du jour, ainsi qu’une pièce d’identité. Pour un profil couple, les deux personnes doivent apparaître sur la photo. Wyylde indique que les documents de certification ne sont pas publiés et sont supprimés après vérification.</p>'),text('<p>Le site indique également utiliser plusieurs niveaux de vérification afin de limiter notamment la création de faux profils. Cela ne signifie pas qu’aucun faux profil ne peut exister : la certification est un signal utile, pas une garantie absolue.</p>')),
- section('plain',h('Renouvellement : un point à vérifier attentivement'),text('<p>Le centre d’aide Wyylde indique en mars 2026 qu’il faut désactiver le renouvellement automatique au moins <strong>24 heures</strong> avant l’échéance. Les Conditions Générales d’Utilisation datées de juillet 2025 mentionnent toutefois un délai de <strong>48 heures</strong>. Ces deux informations officielles ne sont donc pas parfaitement alignées.</p><p>Par prudence, mieux vaut anticiper la désactivation et vérifier dans Paramètres → Abonnement que la prochaine date de prélèvement a bien été remplacée par la date de fin d’abonnement.</p>')),
- section('guarantee',h('Notre engagement éditorial'),text('<p>Nous ne prétendons pas qu’un service de rencontres convient à tout le monde. Notre objectif est de vous donner les éléments vérifiables nécessaires pour vous faire votre propre avis : prix, règles, fonctionnalités, limites et points de vigilance. Lorsqu’une information officielle se contredit, nous le signalons explicitement.</p>')),
- section('faq',h('Questions fréquentes sur Wyylde'),{type:'Faq',items:[
-  {question:'Wyylde est-il gratuit ?',answer:'<p>L’inscription est gratuite, mais l’accès gratuit est limité. Plusieurs fonctions nécessitent l’abonnement Gold.</p>'},
-  {question:'Combien coûte Wyylde Gold ?',answer:'<p>Le centre d’aide français affiche 22,90 € pour un mois, 44,90 € pour trois mois et 99,90 € pour un an, selon les tarifs vérifiés le 30 septembre 2026.</p>'},
-  {question:'Peut-on résilier le renouvellement automatique ?',answer:'<p>Oui, depuis les paramètres du compte. Le centre d’aide indique 24 h avant l’échéance tandis que les CGU publiées mentionnent 48 h : par prudence, anticipez.</p>'},
-  {question:'Wyylde vérifie-t-il les profils ?',answer:'<p>Une procédure de certification existe et Wyylde indique également appliquer plusieurs contrôles de sécurité. La certification réduit l’incertitude mais ne constitue pas une garantie absolue sur chaque interaction.</p>'},
-  {question:'Quel âge faut-il avoir ?',answer:'<p>Wyylde indique que l’inscription est réservée aux personnes majeures, soit 18 ans en France.</p>'}
- ]}),
- section('footer',h('Sources et transparence'),text('<p>Sources principales consultées le 30 septembre 2026 : centre d’aide Wyylde — « Les tarifs et les formules d’abonnements », « S’inscrire sur le site Wyylde », « Certifier mon profil », « Arrêter le renouvellement de son abonnement », « Je souhaite obtenir le remboursement de mon abonnement » — ainsi que les Conditions Générales d’Utilisation Wyylde publiées en juillet 2025.</p><p>Site éditorial indépendant. Wyylde et ses marques appartiennent à leurs propriétaires respectifs.</p>'))
-];
-async function run(){
- try{
-  let funnels=await sio('/funnels?limit=100'); if(!funnels.ok) throw new Error('list funnels '+JSON.stringify(funnels));
-  let funnel=funnels.data.items.find(x=>x.name==='Wyylde Avis France — SEO 2026');
-  if(!funnel){const cr=await sio('/funnels',{method:'POST',body:JSON.stringify({name:'Wyylde Avis France — SEO 2026'})});console.log('CREATE_FUNNEL '+JSON.stringify(cr));if(!cr.ok)throw new Error('create funnel');funnel=cr.data;}
-  let steps=await sio('/funnels/'+funnel.id+'/steps?limit=100'); if(!steps.ok) throw new Error('list steps '+JSON.stringify(steps));
-  let step=steps.data.items.find(x=>x.name==='Wyylde Avis 2026');
-  if(!step){const cr=await sio('/funnels/'+funnel.id+'/steps',{method:'POST',body:JSON.stringify({name:'Wyylde Avis 2026',type:'sales_page'})});console.log('CREATE_STEP '+JSON.stringify(cr));if(!cr.ok)throw new Error('create step');step=cr.data;}
-  const save=await sio('/page-editor/pages/'+step.pageId+'/save',{method:'PUT',body:JSON.stringify({aiContentSchema:{palette:JSON.stringify(palette),sections:JSON.stringify(sections)}})});
-  console.log('SAVE_MAIN '+JSON.stringify(save));
-  const get=await sio('/funnel-steps/'+step.id); console.log('MAIN_STEP '+JSON.stringify(get));
- }catch(e){console.error('SITE_BUILD_ERROR '+String(e?.stack||e));}
+const PORT=process.env.PORT||3000, API='https://api.systeme.io/api', KEY=process.env.SYSTEME_API_KEY;
+function j(res,s,d){res.writeHead(s,{'content-type':'application/json; charset=utf-8'});res.end(JSON.stringify(d));}
+async function sio(path,opts={}){const r=await fetch(API+path,{...opts,headers:{'X-API-Key':KEY,'accept':'application/json','content-type':'application/json'}});const t=await r.text();let d;try{d=JSON.parse(t)}catch{d=t}return {status:r.status,ok:r.ok,data:d,remaining:r.headers.get('x-ratelimit-remaining')};}
+const main={
+ title:'Wyylde Avis 2026 : prix, fiabilité, sécurité et abonnement',
+ intro:'Notre analyse indépendante de Wyylde se concentre sur les faits vérifiables : inscription, abonnement Gold, tarifs, certification, sécurité, renouvellement et remboursement. Dernière vérification : 30 septembre 2026.',
+ paragraphs:[
+ 'L’inscription à Wyylde est gratuite, mais l’accès est limité. Le centre d’aide Wyylde indique qu’un abonnement Gold est nécessaire pour profiter de façon illimitée de plusieurs fonctionnalités, notamment la messagerie, le chat, les lives et l’accès aux contenus des membres.',
+ 'Pour la plateforme française, le centre d’aide Wyylde affiche 22,90 € pour un mois, 44,90 € pour trois mois et 99,90 € pour un an. Les formules trimestrielle et annuelle sont réglées en une seule fois. Les tarifs peuvent varier selon le pays ou certains avantages liés au compte.',
+ 'Wyylde propose une certification de profil. Selon son centre d’aide, elle peut nécessiter une photo non modifiée avec le pseudo, la mention « pour Wyylde » et la date, ainsi qu’une pièce d’identité. Pour un profil couple, les deux personnes doivent apparaître sur la photo.',
+ 'Sur la résiliation du renouvellement automatique, deux sources officielles ne sont pas parfaitement alignées : le centre d’aide indique un délai d’au moins 24 heures avant l’échéance, tandis que les CGU de juillet 2025 mentionnent 48 heures. Par prudence, mieux vaut anticiper et vérifier la confirmation dans les paramètres du compte.',
+ 'Concernant les remboursements, le centre d’aide indique qu’un renouvellement automatique contesté n’ouvre pas droit au remboursement selon sa procédure publiée. Pour un achat immédiat, Wyylde renvoie vers son service client afin d’évaluer les conditions d’éligibilité.',
+ 'Notre méthode privilégie les sources primaires, date chaque vérification et signale les contradictions au lieu de les masquer. Nous n’inventons ni témoignages, ni statistiques d’utilisateurs, ni promesse de résultat.'
+ ],
+ facts:['Inscription gratuite avec accès limité','Gold requis pour plusieurs fonctionnalités illimitées','22,90 € / mois','44,90 € / 3 mois','99,90 € / an','Certification de profil disponible','Réservé aux personnes majeures en France'],
+ source:'Sources principales : centre d’aide Wyylde (tarifs, inscription, certification, renouvellement, remboursement) et Conditions Générales d’Utilisation Wyylde de juillet 2025. Vérifiées le 30 septembre 2026.'
+};
+function makeValue(p,i){const d=(p.description||'').toLowerCase(),t=p.type||'';
+ if(t==='image') return 'adult dating review, privacy, smartphone, abstract editorial illustration';
+ if(t==='buttonText') return 'Lire notre analyse';
+ if(t==='headline'){
+  if(d.includes('hero')) return main.title;
+  if(d.includes('pricing')) return 'Tarifs Wyylde Gold vérifiés';
+  if(d.includes('guarantee')) return 'Notre engagement éditorial';
+  if(d.includes('faq')) return 'Questions fréquentes sur Wyylde';
+  if(d.includes('bonus')) return ['Prix','Inscription','Certification','Sécurité','Résiliation','Remboursement'][i%6];
+  return ['Notre avis sur Wyylde','Wyylde gratuit ou Gold ?','Sécurité et profils certifiés','Renouvellement : point de vigilance','Ce que disent les sources','Méthode et transparence'][i%6];
+ }
+ if(t==='bulletList') return main.facts.slice(0,6).join('\n');
+ if(t==='text'){
+  if(d.includes('built with')) return 'Construit avec © <a href="https://systeme.io" style="color: #000000;">systeme.io</a>';
+  if(d.includes('price') && !d.includes('heading')) return '22,90 €';
+  if(d.includes('billing')) return 'Mensuel · 3 mois · annuel';
+  if(d.includes('guarantee')||d.includes('reassurance')) return 'Informations vérifiées et sourcées au 30 septembre 2026.';
+  if(d.includes('testimonial')||d.includes('social proof')) return 'Analyse éditoriale fondée sur les documents officiels disponibles publiquement.';
+  if(d.includes('footer')) return main.source;
+  if(d.includes('hero')) return main.intro;
+  return '<p>'+main.paragraphs[i%main.paragraphs.length]+'</p>';
+ }
+ return main.paragraphs[i%main.paragraphs.length];
 }
-const app=http.createServer((req,res)=>{if(req.url==='/health')return j(res,200,{ok:true});return j(res,200,{ok:true});});
-app.listen(PORT,()=>{console.log('relay ready',PORT);run();});
+async function run(){try{
+ const fs=await sio('/funnels?limit=100');let funnel=fs.data.items.find(x=>x.name==='Wyylde Avis France — SEO 2026');if(!funnel)throw new Error('funnel missing');
+ const ss=await sio('/funnels/'+funnel.id+'/steps?limit=100');let step=ss.data.items.find(x=>x.name==='Wyylde Avis 2026');if(!step)throw new Error('step missing');
+ const tpl=await sio('/page-editor/page-template',{method:'POST',body:JSON.stringify({type:'sales_page'})});if(!tpl.ok)throw new Error('template '+JSON.stringify(tpl));
+ const placeholders={};tpl.data.placeholders.forEach((p,i)=>placeholders[p.name]=makeValue(p,i));
+ const put=await sio('/pages/'+step.pageId+'/content/from-template',{method:'PUT',body:JSON.stringify({templateId:tpl.data.templateId,placeholders})});
+ console.log('TEMPLATE_APPLY '+JSON.stringify({step,pageId:step.pageId,templateId:tpl.data.templateId,placeholderCount:Object.keys(placeholders).length,result:put}));
+ const get=await sio('/funnel-steps/'+step.id);console.log('VERIFY_STEP '+JSON.stringify(get));
+}catch(e){console.error('BUILD_ERROR '+String(e?.stack||e));}}
+const app=http.createServer((req,res)=>req.url==='/health'?j(res,200,{ok:true}):j(res,200,{ok:true}));
+app.listen(PORT,()=>{console.log('ready',PORT);run();});
