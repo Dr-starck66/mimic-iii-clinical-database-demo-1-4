@@ -1,0 +1,21 @@
+name: Probe Systeme API docs for URL path
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/systeme-url-docs-probe.yml'
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Search official Systeme developer docs
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL https://developer.systeme.io/llms.txt -o /tmp/llms.txt || true
+          echo '=== LLM INDEX MATCHES ==='
+          grep -iE 'funnel.?step|url.?path|slug|custom.?url|page.*url' /tmp/llms.txt | head -200 || true
+          echo '=== CANDIDATE DOCS ==='
+          awk '{for(i=1;i<=NF;i++) if($i ~ /^https:\/\/developer\.systeme\.io\//) print $i}' /tmp/llms.txt | tr -d '()[],' | grep -iE 'funnel|step|url|page' | head -100 || true
